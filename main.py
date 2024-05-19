@@ -36,7 +36,7 @@ with input_tab:
         rate = st.number_input('Rate:', value=3.6, format='%.4f', step=0.01)
 
     file_upload_status = False
-    file_upload_warning_txt = st.warning('Upload files and set the rate first')
+    file_upload_warning_txt = 'Upload files and set the rate first'
     if not all([pc_file, jc_file, rate]):
         st.warning(file_upload_warning_txt)
     else:
@@ -50,6 +50,18 @@ with tables_tab:
         st.warning(file_upload_warning_txt)
 
     brand_col, currency_col, pos_col = st.columns(3)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
