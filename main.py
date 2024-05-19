@@ -35,17 +35,19 @@ with input_tab:
     with rate_col:
         rate = st.number_input('Rate:', value=3.6, format='%.4f', step=0.01)
 
+    file_upload_status = False
+    file_upload_warning_txt = st.warning('Upload files and set the rate first')
     if not all([pc_file, jc_file, rate]):
-        st.warning('Upload files and set the rate first')
+        st.warning(file_upload_warning_txt)
+    else:
+        file_upload_status = True
 
 with tables_tab:
-    try:
+    if file_upload_status:
         jc = JCOps(jc_file, rate)
         pc = PCOps(pc_file, rate)
-    except TypeError:
-        pass
-    except ValueError:
-        pass
+    else:
+        st.warning(file_upload_warning_txt)
 
     brand_col, currency_col, pos_col = st.columns(3)
 

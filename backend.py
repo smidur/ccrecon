@@ -117,11 +117,11 @@ class JCOps(DataframeOps, ABC):
 
         self.jc_custom_cards = pd.DataFrame
         self.jc_custom_columns = pd.DataFrame
-        self.jc_sorted = self.jc.copy(index=False)
-        self.jc_w_currency = self.jc.copy(index=False)
+        self.jc_sorted = self.jc.copy()
+        self.jc_w_currency = self.jc.copy()
 
     def set_columns(self, columns: list):
-        self.jc_custom_columns = self.jc.copy(index=False)
+        self.jc_custom_columns = self.jc.copy()
         self.jc_custom_columns = self.jc_custom_columns[columns]
         return self.jc_custom_columns
 
@@ -135,7 +135,7 @@ class JCOps(DataframeOps, ABC):
         return self.jc_w_currency
 
     def set_card_brands(self, brands: list):
-        self.jc_custom_cards = self.jc.copy(index=False)
+        self.jc_custom_cards = self.jc.copy()
         self.jc_custom_cards = self.jc_custom_cards.loc[self.jc_custom_cards['brand'].isin(brands)]
         return self.jc_custom_cards
 
@@ -235,11 +235,11 @@ class PCOps(DataframeOps, ABC):
 
         self.pc_custom_cards = pd.DataFrame
         self.pc_custom_columns = pd.DataFrame
-        self.pc_sorted = self.pc.copy(index=False)
-        self.pc_w_currency = self.pc.copy(index=False)
+        self.pc_sorted = self.pc.copy()
+        self.pc_w_currency = self.pc.copy()
 
     def set_columns(self, columns: list):
-        self.pc_custom_columns = self.pc.copy(index=False)
+        self.pc_custom_columns = self.pc.copy()
         self.pc_custom_columns = self.pc_custom_columns[columns]
         return self.pc_custom_columns
 
@@ -252,6 +252,6 @@ class PCOps(DataframeOps, ABC):
         return self.pc_w_currency
 
     def set_card_brands(self, brands: list):
-        self.pc_custom_cards = self.pc.copy(index=False)
+        self.pc_custom_cards = self.pc.copy()
         self.pc_custom_cards = self.pc_custom_cards.loc[self.pc_custom_cards['brand'].isin(brands)]
         return self.pc_custom_cards
