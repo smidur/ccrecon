@@ -52,17 +52,18 @@ class JCOps(DataframeOps, ABC):
         jc.rename(columns=convenient_col_names_dict, inplace=True)
 
         # working with text of columns
-        columns = ['note1', 'note2', 'guest_name']
-        for column in columns[:2]:
-            # make all text lowercase
-            jc[column] = jc[column].apply(lambda x: x.lower() if isinstance(x, str) else x)
-            # replace all POS(payment on spot) notes
-            jc[column] = jc[column].replace(r'^check# 0([0-9]{6}) \[[0-9]{5}\]', r'pos \1', regex=True)
-            # replace all text containing bank card numbers
-            jc[column] = jc[column].replace(r'x+([0-9]{4})|(x{3,20}[a-z]*\.)', r'xx\1', regex=True)
-            jc[column] = jc[column].replace(r'[\.]+([0-9]{4})', r'xx\1', regex=True)
-            jc[column] = jc[column].replace(r'(xx[0-9]{4})( xx[0-9]{4}| xx$)', r'\1', regex=True)
-            jc[column] = jc[column].replace(r'[ ]{2,9}([0-9]{1,2}\/[0-9]{1,2})', r' \1', regex=True)
+        columns = ['note1', 'note2', 'guest_name', 'currency']
+        for column in columns:
+            if column in columns[:2]:
+                # make all text lowercase
+                jc[column] = jc[column].apply(lambda x: x.lower() if isinstance(x, str) else x)
+                # replace all POS(payment on spot) notes
+                jc[column] = jc[column].replace(r'^check# 0([0-9]{6}) \[[0-9]{5}\]', r'pos \1', regex=True)
+                # replace all text containing bank card numbers
+                jc[column] = jc[column].replace(r'x+([0-9]{4})|(x{3,20}[a-z]*\.)', r'xx\1', regex=True)
+                jc[column] = jc[column].replace(r'[\.]+([0-9]{4})', r'xx\1', regex=True)
+                jc[column] = jc[column].replace(r'(xx[0-9]{4})( xx[0-9]{4}| xx$)', r'\1', regex=True)
+                jc[column] = jc[column].replace(r'[ ]{2,9}([0-9]{1,2}\/[0-9]{1,2})', r' \1', regex=True)
 
             if column == columns[0]:
                 jc[column] = jc[column].replace(r'([0-9]{1,3}),([0-9]+\.[0-9]{2,}) usd split into ', r'[\1\2=',
@@ -74,15 +75,21 @@ class JCOps(DataframeOps, ABC):
                 jc[column] = jc[column].replace(r'(\[[0-9.=+]+\])[a-z ]+([0-9.=>#]+)[a-z ]+([0-9#]+)', r'\1 \2\3',
                                                 regex=True)
                 jc[column] = jc[column].replace(r'[ ]+', ' ', regex=True)
-            else:
+
+            elif column == columns[1]:
                 jc[column] = jc[column].replace(r'[ ]+', ' ', regex=True)
 
-        column = columns[2]
-        jc[column] = jc[column].replace(r'[ ,]*(And|and)[ ,]*', r' + ', regex=True)
-        jc[column] = jc[column].replace(r'^(Mrs|mrs|Mr|mr)|(Mrs|mrs|Mr|mr)$|[ ,]*(Mrs|mrs|Mr|mr)|(Mrs|mrs|Mr|mr)[ ,]*$',
-                                        '', regex=True)
-        jc[column] = jc[column].replace(r'[ +]+$', '', regex=True)
+            elif column == columns[2]:
+                jc[column] = jc[column].replace(r'[ ,]*(And|and)[ ,]*', r' + ', regex=True)
+                jc[column] = jc[column].replace(
+                    r'^(Mrs|mrs|Mr|mr)|(Mrs|mrs|Mr|mr)$|[ ,]*(Mrs|mrs|Mr|mr)|(Mrs|mrs|Mr|mr)[ ,]*$',
+                    '', regex=True)
+                jc[column] = jc[column].replace(r'[ +]+$', '', regex=True)
 
+            elif column == columns[3]:
+                jc[column] = jc[column].replace(r'ILS\(([0-9.]+)\)', r'\1', regex=True)
+
+        # now we can remove all whitespaces from our columns
         for column in columns:
             jc[column] = jc[column].apply(lambda x: x.strip())
 
@@ -134,10 +141,18 @@ class JCOps(DataframeOps, ABC):
             lambda x: round(x['trx_amount'] * rate, 2))
         return self.jc_w_currency
 
-    def set_card_brands(self, brands: list):
+    def set_card_brands(self, trx_codes: list):
         self.jc_custom_cards = self.jc.copy()
-        self.jc_custom_cards = self.jc_custom_cards.loc[self.jc_custom_cards['brand'].isin(brands)]
+        self.jc_custom_cards = self.jc_custom_cards.loc[
+            self.jc_custom_cards['trx_code'].isin(trx_codes)]
         return self.jc_custom_cards
+
+    def show_initial(self):
+        return self.jc
+
+    def save(self, df: pd.DataFrame):
+        self.jc = df
+        return "Success!"
 
 
 class PCOps(DataframeOps, ABC):
@@ -255,3 +270,10 @@ class PCOps(DataframeOps, ABC):
         self.pc_custom_cards = self.pc.copy()
         self.pc_custom_cards = self.pc_custom_cards.loc[self.pc_custom_cards['brand'].isin(brands)]
         return self.pc_custom_cards
+
+    def show_initial(self):
+        return self.pc
+
+    def save(self, df: pd.DataFrame):
+        self.pc = df
+        return "Success!"
