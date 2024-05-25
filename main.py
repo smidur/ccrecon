@@ -37,24 +37,24 @@ with input_tab:
     with rate_col:
         rate = st.number_input('Rate:', value=3.64, format='%.4f', step=0.01)
 
-    file_upload_status = False
+    file_upload_status = True
     file_upload_warning_txt = '**⚠️ Upload files and set the rate first**'
-    if all([jc_file, pc_file, rate]):
-        file_upload_status = True
-    else:
-        st.warning(file_upload_warning_txt)
+    # if all([jc_file, pc_file, rate]):
+    #     file_upload_status = True
+    # else:
+    #     st.warning(file_upload_warning_txt)
 
 with tables_tab:
     if not file_upload_status:
         st.warning(file_upload_warning_txt)
     else:
-        jc = JCOps(jc_file, rate)
-        pc = PCOps(pc_file, rate)
+        jc = JCOps('20240427_jc.txt', rate)
+        pc = PCOps('20240427_pc.xlsx', rate)
 
-        with st.form(key='properties_form'):
-            jc_settings, pc_settings = st.columns(2)
-            with jc_settings:
-                with st.expander('Journal by Credit Card Setup', expanded=True):
+        with st.expander('**Tables\' Properties**', expanded=True):
+            with st.form(key='properties_form'):
+                jc_settings, pc_settings = st.columns(2)
+                with jc_settings:
                     st.subheader('**Journal by Credit Card table properties**')
 
                     jc_brand_col, jc_trx_type_col, jc_currency_col, jc_pos_col = st.columns(4)
@@ -68,8 +68,13 @@ with tables_tab:
                     with jc_pos_col:
                         jc_pos_setup = st.selectbox('POS / No POS', options=POS_SETUPS, key='jc_pos_setup')
 
-            with pc_settings:
-                with st.expander('Pele card setup', expanded=True):
+                    jc_all_columns = jc.jc.columns
+                    jc_default_columns = ['trx_time', 'guest_name', 'note',
+                                          'room', 'currency', 'ils', 'trx_amount']
+                    jc_columns_choice = st.multiselect('Set desired columns', options=jc_all_columns,
+                                                       default=jc_default_columns)
+
+                with pc_settings:
                     st.subheader('**Pele card table properties**')
 
                     pc_brand_col, pc_currency_col, pc_pos_col = st.columns(3)
@@ -80,26 +85,22 @@ with tables_tab:
                     with pc_pos_col:
                         pc_pos_setup = st.selectbox('POS / No POS', options=POS_SETUPS, key='pc_pos_setup')
 
-            apply_button = st.form_submit_button('APPLY', use_container_width=True)
+                    pc_all_columns = pc.pc.columns
+                    pc_default_columns = ['usd', 'ils', 'card_num', 'trx_time',
+                                          'note', 'currency', 'appr_num']
+                    pc_columns_choice = st.multiselect('Set desired columns', options=pc_all_columns,
+                                                       default=pc_default_columns)
+
+                apply_button = st.form_submit_button('APPLY', use_container_width=True)
+
+        search_by_columns = st.text_input('Search by Credit Card number (4 digits)')
 
         jc_table_col, pc_table_col = st.columns(2)
-
         with jc_table_col:
-            jc_all_columns = jc.jc.columns
-            jc_default_columns = ['trx_time', 'guest_name', 'note',
-                                  'room', 'currency', 'ils', 'trx_amount']
-            jc_columns_choice = st.multiselect('Select desired columns', options=jc_all_columns,
-                                               default=jc_default_columns)
-
             jc_table = st.data_editor(jc.set_columns(jc_columns_choice), height=2000, num_rows='dynamic',
                                       hide_index=True, disabled=False, use_container_width=True)
 
         with pc_table_col:
-            pc_all_columns = pc.pc.columns
-            pc_default_columns = ['usd', 'ils', 'card_num', 'trx_time',
-                                  'note', 'currency', 'appr_num']
-            pc_columns_choice = st.multiselect('Select desired columns', options=pc_all_columns,
-                                               default=pc_default_columns)
             pc_table = st.data_editor(pc.set_columns(pc_columns_choice), height=2000, num_rows='dynamic',
                                       hide_index=True, disabled=False, use_container_width=True)
 

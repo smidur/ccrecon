@@ -89,6 +89,8 @@ class JCOps(DataframeOps, ABC):
             elif column == columns[3]:
                 jc[column] = jc[column].replace(r'ILS\(([0-9.]+)\)', r'\1', regex=True)
 
+        jc['guest_name'] = jc['guest_name'].str.title()
+
         # now we can remove all whitespaces from our columns
         for column in columns:
             jc[column] = jc[column].apply(lambda x: x.strip())
@@ -213,12 +215,9 @@ class PCOps(DataframeOps, ABC):
 
         # some improvements in column values
         pc['trx_time'] = pc['trx_time'].replace(r'^[0-9/ ]+([0-9]{2}:[0-9]{2}):[0-9]{2}', r'\1', regex=True)
-
         pc['card_num'] = pc['card_num'].replace(r'^[0-9]+[*]+([0-9]{4})', r'xx\1', regex=True)
-
         pc['currency'] = pc['currency'].replace('$', 'USD')
         pc['currency'] = pc['currency'].replace('₪', 'ILS')
-
         pc['note'] = pc['note'].replace(r'([0-9]{7,}) [0-9]+', r'\1', regex=True)
         pc['note'] = pc['note'].replace(r'^b[0-9]{5,}([0-9]{3}$)', r'pos xx\1', regex=True)
         pc['note'] = pc['note'].replace(r'^�$', 'pos кракозябра', regex=True)
