@@ -216,8 +216,8 @@ class PCOps(DataframeOps, ABC):
 
         pc['card_num'] = pc['card_num'].replace(r'^[0-9]+[*]+([0-9]{4})', r'xx\1', regex=True)
 
-        pc['currency'] = pc['currency'].replace('$', 'usd')
-        pc['currency'] = pc['currency'].replace('₪', 'ils')
+        pc['currency'] = pc['currency'].replace('$', 'USD')
+        pc['currency'] = pc['currency'].replace('₪', 'ILS')
 
         pc['note'] = pc['note'].replace(r'([0-9]{7,}) [0-9]+', r'\1', regex=True)
         pc['note'] = pc['note'].replace(r'^b[0-9]{5,}([0-9]{3}$)', r'pos xx\1', regex=True)
@@ -231,12 +231,12 @@ class PCOps(DataframeOps, ABC):
 
         pc['ils'] = pc.apply(lambda x:
                              round(x['trx_amount'], 2)
-                             if x['currency'] == 'ils'
+                             if x['currency'] == 'ILS'
                              else round(x['trx_amount'] * rate, 2), axis='columns')
 
         pc['usd'] = pc.apply(lambda x:
                              round(x['trx_amount'], 2)
-                             if x['currency'] == 'usd'
+                             if x['currency'] == 'USD'
                              else round(x['trx_amount'] / rate, 2), axis='columns')
 
         pc.drop('trx_amount', axis='columns', inplace=True)
