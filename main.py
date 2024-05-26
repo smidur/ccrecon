@@ -70,7 +70,7 @@ with tables_tab:
 
                     jc_all_columns = jc.jc.columns
                     jc_default_columns = ['trx_time', 'guest_name', 'note',
-                                          'room', 'currency', 'ils', 'trx_amount']
+                                          'room', 'currency', 'ils', 'usd']
                     jc_columns_choice = st.multiselect('Set desired columns', options=jc_all_columns,
                                                        default=jc_default_columns)
 
@@ -93,7 +93,23 @@ with tables_tab:
 
                 apply_button = st.form_submit_button('APPLY', use_container_width=True)
 
-        search_by_columns = st.text_input('Search by Credit Card number (4 digits)')
+        with st.form('find_form'):
+            jc_find_col, pc_find_col = st.columns(2)
+
+            find_options_col, find_value_col, find_button_col = st.columns(3)
+            with find_options_col:
+                find_multiselect_options = ['All',].append(pc_columns_choice)
+                find_options = st.selectbox('Find in column:', options=pc_columns_choice)
+
+            with find_value_col:
+                if find_options in ['usd', 'ils']:
+                    find_value = st.number_input('Value:', value=0.0, format='%.2f', step=10.0, key='find_value')
+                else:
+                    find_value = st.text_input('Value:', max_chars=200, key='find_value')
+
+            with find_button_col:
+                st.write('')
+                find_button = st.form_submit_button('FIND')
 
         jc_table_col, pc_table_col = st.columns(2)
         with jc_table_col:

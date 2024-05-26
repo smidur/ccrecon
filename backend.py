@@ -25,6 +25,25 @@ class DataframeOps(ABC):
         pass
 
 
+# def find_value(df: pd.DataFrame, column_name: str, value: (str, float, int)) -> pd.DataFrame | str:
+#     if column_name in [None, '']:
+#         return 'There\'s no such column!'
+#     elif column_name.lower() == 'all' and value in [None, 0, 0.0, '']:
+#         return 'Nothing to find'
+#
+#     if isinstance(value, str):
+#         discovered = df.loc[df[column_name].str.contains(value, regex=True)]
+#         if discovered in [None, '']:
+#             return 'Nothing found!'
+#         return discovered
+#
+#     elif isinstance(value, float) or isinstance(value, int):
+#         discovered = df.loc[df[column_name] == value]
+#         if discovered in [None, '']:
+#             return 'Nothing found!'
+#         return discovered
+
+
 class JCOps(DataframeOps, ABC):
     version = 0.1
 
@@ -46,7 +65,7 @@ class JCOps(DataframeOps, ABC):
                                      'reference': 'note1',
                                      'credit_card_supplement': 'note2',
                                      'currency1': 'currency',
-                                     'cashier_credit': 'trx_amount',
+                                     'cashier_credit': 'usd',
                                      'cash_id_user_name': 'username'
                                      }
         jc.rename(columns=convenient_col_names_dict, inplace=True)
@@ -112,13 +131,12 @@ class JCOps(DataframeOps, ABC):
         jc['note'] = notes
 
         # convert column datatype to float for future calculations
-        jc['trx_amount'] = jc['trx_amount'].astype(float)
+        jc['usd'] = jc['usd'].astype(float)
 
-        jc['ils'] = jc['trx_amount'].apply(lambda x: round(x * rate, 2))
+        jc['ils'] = jc['usd'].apply(lambda x: round(x * rate, 2))
 
         final_columns = ['username', 'trx_code', 'trx_time', 'guest_name',
-                         'note', 'room', 'currency', 'ils',
-                         'trx_amount']
+                         'note', 'room', 'currency', 'ils', 'usd']
         jc = jc[final_columns]
 
         self.jc = jc
@@ -140,7 +158,7 @@ class JCOps(DataframeOps, ABC):
 
     def add_currency(self, currency: str, rate: float):
         self.jc_w_currency[currency] = self.jc_w_currency.apply(
-            lambda x: round(x['trx_amount'] * rate, 2))
+            lambda x: round(x['usd'] * rate, 2))
         return self.jc_w_currency
 
     def set_card_brands(self, trx_codes: list):
