@@ -1,5 +1,6 @@
+import pandas as pd
 import streamlit as st
-from backend import JCOps, PCOps
+from backend import JCOps, PCOps, find_value
 from opera_trx_codes.trx_codes_extractor import trx_codes
 
 # create dataframe with transaction code for bank cards
@@ -55,14 +56,14 @@ with tables_tab:
             with st.form(key='properties_form'):
                 jc_settings, pc_settings = st.columns(2)
                 with jc_settings:
-                    st.subheader('**Journal by Credit Card table properties**')
+                    st.subheader('**Journal by CC table properties**')
 
                     jc_brand_col, jc_trx_type_col, jc_currency_col, jc_pos_col = st.columns(4)
                     with jc_brand_col:
                         jc_brand = st.selectbox('Brand name', options=BRANDS, key='jc_brand')
                     with jc_trx_type_col:
                         jc_trx_types = ['Online + Offline', 'Online', 'Offline']
-                        jc_trx_type = st.selectbox('Transaction type', options=jc_trx_types)
+                        jc_trx_type = st.selectbox('Trx type', options=jc_trx_types)
                     with jc_currency_col:
                         jc_currency = st.selectbox('Currency', options=CURRENCIES, key='jc_currency')
                     with jc_pos_col:
@@ -93,42 +94,39 @@ with tables_tab:
 
                 apply_button = st.form_submit_button('APPLY', use_container_width=True)
 
-        with st.form('find_form'):
+        with st.form(key='find_form'):
             jc_find_col, pc_find_col = st.columns(2)
 
-            find_options_col, find_value_col, find_button_col = st.columns(3)
+            find_options_col, find_value_col, find_reset_button_col = st.columns([7, 10, 1])
             with find_options_col:
-                find_multiselect_options = ['All',].append(pc_columns_choice)
-                find_options = st.selectbox('Find in column:', options=pc_columns_choice)
+                find_multiselect_options = jc_columns_choice.copy()
+                find_multiselect_options.insert(0, 'all')
+                find_options = st.selectbox('Find in column:', options=jc_columns_choice, label_visibility='visible')
 
             with find_value_col:
-                if find_options in ['usd', 'ils']:
-                    find_value = st.number_input('Value:', value=0.0, format='%.2f', step=10.0, key='find_value')
-                else:
-                    find_value = st.text_input('Value:', max_chars=200, key='find_value')
+                find_value_input = st.text_input('Value:', max_chars=200, label_visibility='visible', key='find_value')
 
-            with find_button_col:
+            with find_reset_button_col:
                 st.write('')
-                find_button = st.form_submit_button('FIND')
+                st.write('')
+                find_reset_button = st.form_submit_button('RESET')
+
+            find_submit_button = st.form_submit_button('FIND', use_container_width=True)
+
+        if find_reset_button:
+            find_submit_button = False
+            reset_find_button = False
 
         jc_table_col, pc_table_col = st.columns(2)
         with jc_table_col:
-            jc_table = st.data_editor(jc.set_columns(jc_columns_choice), height=2000, num_rows='dynamic',
-                                      hide_index=True, disabled=False, use_container_width=True)
+            if find_submit_button and find_options not in [None, '']:
+                jc_table: object = find_value(df=jc.jc, column_name=find_options, value=find_value_input)
+                discovered = st.data_editor(jc_table, height=2000, num_rows='dynamic',
+                                            hide_index=True, disabled=False, use_container_width=True)
+            else:
+                jc_table = st.data_editor(jc.set_columns(jc_columns_choice), height=2000, num_rows='dynamic',
+                                          hide_index=True, disabled=False, use_container_width=True)
 
         with pc_table_col:
             pc_table = st.data_editor(pc.set_columns(pc_columns_choice), height=2000, num_rows='dynamic',
                                       hide_index=True, disabled=False, use_container_width=True)
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,6 +2,12 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 
+def find_value(df: pd.DataFrame, column_name: str, value: str) -> pd.DataFrame | None:
+    value = str(value)
+    discovered = df.loc[df[column_name].str.contains(value, regex=True)]
+    return discovered
+
+
 class DataframeOps(ABC):
 
     @abstractmethod
@@ -23,25 +29,6 @@ class DataframeOps(ABC):
     @abstractmethod
     def set_card_brands(self, brands: list):
         pass
-
-
-# def find_value(df: pd.DataFrame, column_name: str, value: (str, float, int)) -> pd.DataFrame | str:
-#     if column_name in [None, '']:
-#         return 'There\'s no such column!'
-#     elif column_name.lower() == 'all' and value in [None, 0, 0.0, '']:
-#         return 'Nothing to find'
-#
-#     if isinstance(value, str):
-#         discovered = df.loc[df[column_name].str.contains(value, regex=True)]
-#         if discovered in [None, '']:
-#             return 'Nothing found!'
-#         return discovered
-#
-#     elif isinstance(value, float) or isinstance(value, int):
-#         discovered = df.loc[df[column_name] == value]
-#         if discovered in [None, '']:
-#             return 'Nothing found!'
-#         return discovered
 
 
 class JCOps(DataframeOps, ABC):
@@ -132,8 +119,10 @@ class JCOps(DataframeOps, ABC):
 
         # convert column datatype to float for future calculations
         jc['usd'] = jc['usd'].astype(float)
-
         jc['ils'] = jc['usd'].apply(lambda x: round(x * rate, 2))
+
+        # convert back to str to use find function better
+        jc['usd'] = jc['usd'].astype(str)
 
         final_columns = ['username', 'trx_code', 'trx_time', 'guest_name',
                          'note', 'room', 'currency', 'ils', 'usd']
@@ -147,30 +136,30 @@ class JCOps(DataframeOps, ABC):
         self.jc_sorted = self.jc.copy()
         self.jc_w_currency = self.jc.copy()
 
-    def set_columns(self, columns: list):
+    def set_columns(self, columns: list) -> pd.DataFrame:
         self.jc_custom_columns = self.jc.copy()
         self.jc_custom_columns = self.jc_custom_columns[columns]
         return self.jc_custom_columns
 
-    def sort_data(self, columns: list, order_asc=False):
+    def sort_data(self, columns: list, order_asc=False) -> pd.DataFrame:
         self.jc_sorted = self.jc_sorted.sort_values(columns, ascending=order_asc)
         return self.jc_sorted
 
-    def add_currency(self, currency: str, rate: float):
+    def add_currency(self, currency: str, rate: float) -> pd.DataFrame:
         self.jc_w_currency[currency] = self.jc_w_currency.apply(
             lambda x: round(x['usd'] * rate, 2))
         return self.jc_w_currency
 
-    def set_card_brands(self, trx_codes: list):
+    def set_card_brands(self, trx_codes: list) -> pd.DataFrame:
         self.jc_custom_cards = self.jc.copy()
         self.jc_custom_cards = self.jc_custom_cards.loc[
             self.jc_custom_cards['trx_code'].isin(trx_codes)]
         return self.jc_custom_cards
 
-    def show_initial(self):
+    def show_initial(self) -> pd.DataFrame:
         return self.jc
 
-    def save(self, df: pd.DataFrame):
+    def save(self, df: pd.DataFrame) -> str:
         self.jc = df
         return "Success!"
 
@@ -270,27 +259,27 @@ class PCOps(DataframeOps, ABC):
         self.pc_sorted = self.pc.copy()
         self.pc_w_currency = self.pc.copy()
 
-    def set_columns(self, columns: list):
+    def set_columns(self, columns: list) -> pd.DataFrame:
         self.pc_custom_columns = self.pc.copy()
         self.pc_custom_columns = self.pc_custom_columns[columns]
         return self.pc_custom_columns
 
-    def sort_data(self, columns: list, order_asc=False):
+    def sort_data(self, columns: list, order_asc=False) -> pd.DataFrame:
         self.pc_sorted = self.pc_sorted.sort_values(columns, ascending=order_asc)
         return self.pc_sorted
 
-    def add_currency(self, currency: str, rate: float):
+    def add_currency(self, currency: str, rate: float) -> pd.DataFrame:
         self.pc_w_currency[currency] = (self.pc_w_currency.apply(lambda x: round(x['ils'] * rate, 2)))
         return self.pc_w_currency
 
-    def set_card_brands(self, brands: list):
+    def set_card_brands(self, brands: list) -> pd.DataFrame:
         self.pc_custom_cards = self.pc.copy()
         self.pc_custom_cards = self.pc_custom_cards.loc[self.pc_custom_cards['brand'].isin(brands)]
         return self.pc_custom_cards
 
-    def show_initial(self):
+    def show_initial(self) -> pd.DataFrame:
         return self.pc
 
-    def save(self, df: pd.DataFrame):
+    def save(self, df: pd.DataFrame) -> str:
         self.pc = df
         return "Success!"
