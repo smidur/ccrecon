@@ -1,4 +1,3 @@
-import pandas as pd
 import streamlit as st
 from backend import JCOps, PCOps, find_value
 from opera_trx_codes.trx_codes_extractor import trx_codes
