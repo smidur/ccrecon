@@ -21,6 +21,7 @@ input_tab, tables_tab, search_tab = st.tabs(tabs=tabs)
 with input_tab:
     jc_file_col, pc_file_col = st.columns(2)
     with jc_file_col:
+        st.subheader('**Opera table properties**')
         jc_file_formats = ['txt', ]
         jc_file_uploader_label = 'Opera\'s Journal by Credit Card file:'
 
@@ -28,6 +29,7 @@ with input_tab:
                                    type=jc_file_formats)
 
     with pc_file_col:
+        st.subheader('**Pelecard table properties**')
         pc_file_formats = ['xlsx', ]
         pc_file_uploader_label = 'PeleCard report MS Excel file:'
 
@@ -50,10 +52,9 @@ with input_tab:
         jc_obj = JCOps('20240427_jc.txt', rate)
         pc_obj = PCOps('20240427_pc.xlsx', rate)
 
-        with st.form(key='properties_form'):
+        with st.form(key='properties_form', border=False):
             jc_settings, pc_settings = st.columns(2)
             with jc_settings:
-                st.subheader('**Journal by Credit Card table properties**')
 
                 jc_brand_col, jc_trx_type_col, jc_currency_col, jc_pos_col = st.columns(4)
                 with jc_brand_col:
@@ -73,8 +74,6 @@ with input_tab:
                                                    default=jc_default_columns)
 
             with pc_settings:
-                st.subheader('**Pele card table properties**')
-
                 pc_brand_col, pc_currency_col, pc_pos_col = st.columns(3)
                 with pc_brand_col:
                     pc_brand = st.selectbox('Brand name', options=BRANDS, key='pc_brand')
@@ -135,9 +134,11 @@ with (tables_tab):
     jc_table_col, pc_table_col = st.columns(2)
     with jc_table_col:
         if find_submit_button and jc_find_options not in [None, '']:
-            jc_table: pd.DataFrame = find_value(df=jc_obj.jc, column_name=jc_find_options, value=jc_find_value_input)
-            jc_discovered = st.data_editor(jc_table, height=2000, num_rows='dynamic',
-                                           hide_index=True, disabled=False, use_container_width=True)
+            jc_discovered: pd.DataFrame = find_value(df=jc_obj.jc, column_name=jc_find_options,
+                                                     value=jc_find_value_input)
+            jc_table = st.data_editor(jc_discovered, height=2000, num_rows='dynamic',
+                                      hide_index=True, disabled=False, use_container_width=True)
+
         else:
             jc_table = st.data_editor(jc_obj.set_columns(jc_columns_choice), height=2000, num_rows='dynamic',
                                       hide_index=True, disabled=False, use_container_width=True)
@@ -147,7 +148,9 @@ with (tables_tab):
             pc_table: pd.DataFrame = find_value(df=pc_obj.pc, column_name=pc_find_options, value=pc_find_value_input)
             pc_discovered = st.data_editor(pc_table, height=2000, num_rows='dynamic',
                                            hide_index=True, disabled=False, use_container_width=True)
+
         else:
             pc_table = st.data_editor(pc_obj.set_columns(pc_columns_choice), height=2000, num_rows='dynamic',
                                       hide_index=True, disabled=False, use_container_width=True)
+
 
