@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from opera_trx_codes.trx_codes_extractor import trx_codes
 
-
-def find_value(df: pd.DataFrame, column_name: str, value: str) -> pd.DataFrame | None:
-    value = str(value)
-    discovered = df.loc[df[column_name].str.contains(value, regex=True)]
-    return discovered
+# create dataframe with transaction code for bank cards
+# that we will use to operate with journal by credit card
+df_cards = trx_codes.cards
 
 
 class DataframeOps(ABC):
@@ -150,10 +149,10 @@ class JCOps(DataframeOps, ABC):
             lambda x: round(x['usd'] * rate, 2))
         return self.jc_w_currency
 
-    def set_card_brands(self, trx_codes: list) -> pd.DataFrame:
+    def set_card_brands(self, transaction_codes: list) -> pd.DataFrame:
         self.jc_custom_cards = self.jc.copy()
         self.jc_custom_cards = self.jc_custom_cards.loc[
-            self.jc_custom_cards['trx_code'].isin(trx_codes)]
+            self.jc_custom_cards['trx_code'].isin(transaction_codes)]
         return self.jc_custom_cards
 
     def show_initial(self) -> pd.DataFrame:
