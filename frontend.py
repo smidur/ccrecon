@@ -26,7 +26,7 @@ class Inputs:
         self.rate = st.number_input('Rate:', value=3.64, format='%.4f', step=0.01)
 
 
-class JCView:
+class JCElements:
     def __init__(self, jc_obj):
         self.found = pd.DataFrame
         self.found_table = st.data_editor
@@ -70,15 +70,13 @@ class JCView:
             self.find_value_input = st.text_input('Value:', max_chars=200,
                                                   label_visibility='visible', key='jc_find_value')
 
-    def show_found(self):
-        self.found = self.df.loc[
-            self.df[self.find_options].str.contains(self.find_value_input, regex=True)
-        ]
+    def show_found(self, df: pd.DataFrame):
+        self.found = df
         self.found_table = st.data_editor(self.found, height=2000, num_rows='dynamic',
                                           hide_index=True, disabled=False, use_container_width=True)
 
 
-class PCView:
+class PCElements:
     def __init__(self, pc_obj):
         self.found = pd.DataFrame
         self.found_table = st.data_editor
@@ -118,10 +116,8 @@ class PCView:
             self.find_value_input = st.text_input('Value:', max_chars=200, label_visibility='visible',
                                                   key='pc_find_value')
 
-    def show_found(self):
-        self.found = self.df.loc[
-            self.df[self.find_options].str.contains(self.find_value_input, regex=True)
-        ]
+    def show_found(self, df: pd.DataFrame):
+        self.found = df
         self.found_table = st.data_editor(self.found, height=2000, num_rows='dynamic',
                                           hide_index=True, disabled=False, use_container_width=True)
 

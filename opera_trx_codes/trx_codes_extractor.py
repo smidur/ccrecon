@@ -80,24 +80,24 @@ class TransactionCodes:
         # ~  means NOT IN
         # df_other = df.loc[~df['descr'].isin(df_cards['descr'])]
 
-        self.cards = df_cards
-        self.visa = df_visa
-        self.mastercard = df_mastercard
-        self.amex = df_amex
-        self.diners = df_diners
-        self.pos = df_pos
-        self.online = df_online
-        self.offline = df_offline
+        self.df_cards = df_cards
+        self.df_visa = df_visa
+        self.df_mastercard = df_mastercard
+        self.df_amex = df_amex
+        self.df_diners = df_diners
+        self.df_pos = df_pos
+        self.df_online = df_online
+        self.df_offline = df_offline
 
     def save_to_csv(self):
-        self.cards.to_csv('cards.csv', sep='|', index=False, encoding='utf-8')
-        self.visa.to_csv('cards_visa.csv', sep='|', index=False, encoding='utf-8')
-        self.mastercard.to_csv('cards_mastercard.csv', sep='|', index=False, encoding='utf-8')
-        self.amex.to_csv('cards_amex.csv', sep='|', index=False, encoding='utf-8')
-        self.diners.to_csv('cards_diners.csv', sep='|', index=False, encoding='utf-8')
-        self.pos.to_csv('cards_pos.csv', sep='|', index=False, encoding='utf-8')
-        self.online.to_csv('cards_online.csv', sep='|', index=False, encoding='utf-8')
-        self.offline.to_csv('cards_offline.csv', sep='|', index=False, encoding='utf-8')
+        self.df_cards.to_csv('cards.csv', sep='|', index=False, encoding='utf-8')
+        self.df_visa.to_csv('cards_visa.csv', sep='|', index=False, encoding='utf-8')
+        self.df_mastercard.to_csv('cards_mastercard.csv', sep='|', index=False, encoding='utf-8')
+        self.df_amex.to_csv('cards_amex.csv', sep='|', index=False, encoding='utf-8')
+        self.df_diners.to_csv('cards_diners.csv', sep='|', index=False, encoding='utf-8')
+        self.df_pos.to_csv('cards_pos.csv', sep='|', index=False, encoding='utf-8')
+        self.df_online.to_csv('cards_online.csv', sep='|', index=False, encoding='utf-8')
+        self.df_offline.to_csv('cards_offline.csv', sep='|', index=False, encoding='utf-8')
 
 
 trx_codes = TransactionCodes()

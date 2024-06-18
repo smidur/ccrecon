@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import Type
+
 import pandas as pd
+from pandas import DataFrame
+
 from opera_trx_codes.trx_codes_extractor import trx_codes
 
 # create dataframe with transaction code for bank cards
@@ -10,7 +14,11 @@ df_cards = trx_codes.cards
 class DataframeOps(ABC):
 
     @abstractmethod
-    def __init__(self, file: str, rate: float):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def set_inputs(self, file: str, rate: float):
         pass
 
     @abstractmethod
@@ -29,11 +37,27 @@ class DataframeOps(ABC):
     def set_card_brands(self, brands: list):
         pass
 
+    @abstractmethod
+    def show_initial(self):
+        pass
+
+    @abstractmethod
+    def save(self, df: pd.DataFrame) -> str:
+        pass
+
 
 class JCOps(DataframeOps, ABC):
     version = 0.1
 
-    def __init__(self, file: str, rate: float):
+    def __init__(self):
+        self.jc = pd.DataFrame
+        self.rate = float
+        self.jc_custom_cards = pd.DataFrame
+        self.jc_custom_columns = pd.DataFrame
+        self.jc_sorted = pd.DataFrame
+        self.jc_w_currency = pd.DataFrame
+
+    def set_inputs(self, file: str, rate: float):
         jc = pd.read_csv(file, sep='|', dtype='str')
 
         # after seeing that last two rows are all NaN, we can get rid of them
@@ -129,9 +153,6 @@ class JCOps(DataframeOps, ABC):
 
         self.jc = jc
         self.rate = rate
-
-        self.jc_custom_cards = pd.DataFrame
-        self.jc_custom_columns = pd.DataFrame
         self.jc_sorted = self.jc.copy()
         self.jc_w_currency = self.jc.copy()
 
@@ -144,7 +165,7 @@ class JCOps(DataframeOps, ABC):
         self.jc_sorted = self.jc_sorted.sort_values(columns, ascending=order_asc)
         return self.jc_sorted
 
-    def add_currency(self, currency: str, rate: float) -> pd.DataFrame:
+    def add_currency(self, currency: str, rate: float) -> Type[DataFrame]:
         self.jc_w_currency[currency] = self.jc_w_currency.apply(
             lambda x: round(x['usd'] * rate, 2))
         return self.jc_w_currency
@@ -155,7 +176,7 @@ class JCOps(DataframeOps, ABC):
             self.jc_custom_cards['trx_code'].isin(transaction_codes)]
         return self.jc_custom_cards
 
-    def show_initial(self) -> pd.DataFrame:
+    def show_initial(self) -> Type[DataFrame]:
         return self.jc
 
     def save(self, df: pd.DataFrame) -> str:
@@ -167,6 +188,14 @@ class PCOps(DataframeOps, ABC):
     version = 0.1
 
     def __init__(self, file: str, rate: float):
+        self.pc = pd.DataFrame
+        self.rate = float
+        self.pc_custom_cards = pd.DataFrame
+        self.pc_custom_columns = pd.DataFrame
+        self.pc_sorted = pd.DataFrame
+        self.pc_w_currency = pd.DataFrame
+
+    def set_inputs(self, file: str, rate: float):
         pc = pd.read_excel(file, dtype='str')
 
         col_names_to_english = {
@@ -252,9 +281,6 @@ class PCOps(DataframeOps, ABC):
 
         self.pc = pc
         self.rate = rate
-
-        self.pc_custom_cards = pd.DataFrame
-        self.pc_custom_columns = pd.DataFrame
         self.pc_sorted = self.pc.copy()
         self.pc_w_currency = self.pc.copy()
 
@@ -267,7 +293,7 @@ class PCOps(DataframeOps, ABC):
         self.pc_sorted = self.pc_sorted.sort_values(columns, ascending=order_asc)
         return self.pc_sorted
 
-    def add_currency(self, currency: str, rate: float) -> pd.DataFrame:
+    def add_currency(self, currency: str, rate: float) -> Type[DataFrame]:
         self.pc_w_currency[currency] = (self.pc_w_currency.apply(lambda x: round(x['ils'] * rate, 2)))
         return self.pc_w_currency
 
@@ -276,7 +302,12 @@ class PCOps(DataframeOps, ABC):
         self.pc_custom_cards = self.pc_custom_cards.loc[self.pc_custom_cards['brand'].isin(brands)]
         return self.pc_custom_cards
 
-    def show_initial(self) -> pd.DataFrame:
+    def find(self, column: str, value: str) -> pd.DataFrame:
+        df = self.pc.copy()
+        result = df.loc[df[column].str.contains(value, regex=True)]
+        return result
+
+    def show_initial(self) -> Type[DataFrame]:
         return self.pc
 
     def save(self, df: pd.DataFrame) -> str:
