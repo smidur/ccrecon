@@ -1,5 +1,3 @@
-from typing import List
-
 import pandas as pd
 
 raw_dataframe = pd.read_csv('opera_trx_codes/raw_trx_codes.csv', sep='|', dtype='str')
