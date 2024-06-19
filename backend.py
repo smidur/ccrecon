@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Type
-
 import pandas as pd
 from pandas import DataFrame
-
 from opera_trx_codes.trx_codes_extractor import trx_codes
 
 # create dataframe with transaction code for bank cards
@@ -30,10 +28,6 @@ class DataframeOps(ABC):
         pass
 
     @abstractmethod
-    def add_currency(self, currency: str, rate: float):
-        pass
-
-    @abstractmethod
     def set_card_brands(self, brands: list):
         pass
 
@@ -47,7 +41,7 @@ class DataframeOps(ABC):
 
 
 class JCOps(DataframeOps, ABC):
-    version = 0.1
+    version = 0.2
 
     def __init__(self):
         self.jc = pd.DataFrame
@@ -165,11 +159,6 @@ class JCOps(DataframeOps, ABC):
         self.jc_sorted = self.jc_sorted.sort_values(columns, ascending=order_asc)
         return self.jc_sorted
 
-    def add_currency(self, currency: str, rate: float) -> Type[DataFrame]:
-        self.jc_w_currency[currency] = self.jc_w_currency.apply(
-            lambda x: round(x['usd'] * rate, 2))
-        return self.jc_w_currency
-
     def set_card_brands(self, transaction_codes: list) -> pd.DataFrame:
         self.jc_custom_cards = self.jc.copy()
         self.jc_custom_cards = self.jc_custom_cards.loc[
@@ -183,11 +172,21 @@ class JCOps(DataframeOps, ABC):
         self.jc = df
         return "Success!"
 
+    def find(self, column: str, value: str) -> pd.DataFrame:
+        df = self.jc.copy()
+        result = df.loc[df[column].str.contains(value, regex=True)]
+        return result
+
+    def add_currency(self, currency: str, rate: float) -> Type[DataFrame]:
+        self.jc_w_currency[currency] = self.jc_w_currency.apply(
+            lambda x: round(x['usd'] * rate, 2))
+        return self.jc_w_currency
+
 
 class PCOps(DataframeOps, ABC):
-    version = 0.1
+    version = 0.2
 
-    def __init__(self, file: str, rate: float):
+    def __init__(self):
         self.pc = pd.DataFrame
         self.rate = float
         self.pc_custom_cards = pd.DataFrame
@@ -255,7 +254,7 @@ class PCOps(DataframeOps, ABC):
         pc['currency'] = pc['currency'].replace('₪', 'ILS')
         pc['note'] = pc['note'].replace(r'([0-9]{7,}) [0-9]+', r'\1', regex=True)
         pc['note'] = pc['note'].replace(r'^b[0-9]{5,}([0-9]{3}$)', r'pos xx\1', regex=True)
-        pc['note'] = pc['note'].replace(r'^�$', 'pos кракозябра', regex=True)
+        pc['note'] = pc['note'].replace(r'[�]+', 'pos кракозябра', regex=True)
 
         for column in pc.columns:
             pc[column] = pc[column].apply(lambda x: x.strip())
@@ -293,19 +292,10 @@ class PCOps(DataframeOps, ABC):
         self.pc_sorted = self.pc_sorted.sort_values(columns, ascending=order_asc)
         return self.pc_sorted
 
-    def add_currency(self, currency: str, rate: float) -> Type[DataFrame]:
-        self.pc_w_currency[currency] = (self.pc_w_currency.apply(lambda x: round(x['ils'] * rate, 2)))
-        return self.pc_w_currency
-
     def set_card_brands(self, brands: list) -> pd.DataFrame:
         self.pc_custom_cards = self.pc.copy()
         self.pc_custom_cards = self.pc_custom_cards.loc[self.pc_custom_cards['brand'].isin(brands)]
         return self.pc_custom_cards
-
-    def find(self, column: str, value: str) -> pd.DataFrame:
-        df = self.pc.copy()
-        result = df.loc[df[column].str.contains(value, regex=True)]
-        return result
 
     def show_initial(self) -> Type[DataFrame]:
         return self.pc
@@ -313,3 +303,12 @@ class PCOps(DataframeOps, ABC):
     def save(self, df: pd.DataFrame) -> str:
         self.pc = df
         return "Success!"
+
+    def find(self, column: str, value: str) -> pd.DataFrame:
+        df = self.pc.copy()
+        result = df.loc[df[column].str.contains(value, regex=True)]
+        return result
+
+    def add_currency(self, currency: str, rate: float) -> Type[DataFrame]:
+        self.pc_w_currency[currency] = (self.pc_w_currency.apply(lambda x: round(x['ils'] * rate, 2)))
+        return self.pc_w_currency

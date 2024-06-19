@@ -27,7 +27,7 @@ class Inputs:
 
 
 class JCElements:
-    def __init__(self, jc_obj):
+    def __init__(self):
         self.found = pd.DataFrame
         self.found_table = st.data_editor
         self.find_value_input = st.text_input
@@ -38,9 +38,7 @@ class JCElements:
         self.trx_type = st.selectbox
         self.brand = st.selectbox
 
-        self.df = jc_obj.jc
-
-    def settings(self):
+    def settings(self, df: pd.DataFrame):
         brand_col, trx_type_col, currency_col, pos_col = st.columns(4)
         with brand_col:
             self.brand = st.selectbox('Brand name', options=BRANDS, key='jc_brand')
@@ -51,7 +49,7 @@ class JCElements:
         with pos_col:
             self.pos_setup = st.selectbox('POS / No POS', options=POS_SETUPS, key='jc_pos_setup')
 
-        all_columns = self.df.columns
+        all_columns = df.columns
         self.columns_choice = st.multiselect('Set desired columns', options=all_columns,
                                              default=JC_DEFAULT_COLUMNS)
 
@@ -77,7 +75,7 @@ class JCElements:
 
 
 class PCElements:
-    def __init__(self, pc_obj):
+    def __init__(self):
         self.found = pd.DataFrame
         self.found_table = st.data_editor
         self.find_value_input = st.text_input
@@ -87,9 +85,7 @@ class PCElements:
         self.currency = st.selectbox
         self.brand = st.selectbox
 
-        self.df = pc_obj.pc
-
-    def settings(self):
+    def settings(self, df: pd.DataFrame):
         brand_col, currency_col, pos_col = st.columns(3)
         with brand_col:
             self.brand = st.selectbox('Brand name', options=BRANDS, key='pc_brand')
@@ -98,7 +94,7 @@ class PCElements:
         with pos_col:
             self.pos_setup = st.selectbox('POS / No POS', options=POS_SETUPS, key='pc_pos_setup')
 
-        all_columns = self.df.columns
+        all_columns = df.columns
         self.columns_choice = st.multiselect('Set desired columns', options=all_columns,
                                              default=PC_DEFAULT_COLUMNS)
 
@@ -122,4 +118,7 @@ class PCElements:
                                           hide_index=True, disabled=False, use_container_width=True)
 
 
+inputs = Inputs()
+jc_elems = JCElements()
+pc_elems = PCElements()
 
