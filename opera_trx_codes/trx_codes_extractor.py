@@ -1,3 +1,5 @@
+from typing import List
+
 import pandas as pd
 
 raw_dataframe = pd.read_csv('opera_trx_codes/raw_trx_codes.csv', sep='|', dtype='str')
@@ -23,7 +25,7 @@ class TransactionCodes:
                             'american express', r'^mc', 'master card', 'isrcard', ' isr ', 'dolar-',
                             'diners club', 'pos-mastercard', 'pos-', 'e-shop', 'euro']
         correct_words = ['offline', 'online', 'pelelink', 'ils ', ' ils ', ' ils', ' ', ' ',
-                         'amex', 'mastercard', 'mastercard', 'isracard', ' isracard ', 'usd',
+                         'amex', 'mastercard', 'mastercard', 'mastercard', ' mastercard ', 'usd',
                          'diners', 'pos mastercard', 'pos', 'eshop', 'eur']
 
         for misspelled, correct in zip(misspelled_words, correct_words):
@@ -34,50 +36,50 @@ class TransactionCodes:
         df['usd'] = df['descr'].apply(
             lambda x: True if any(usd_var in x for usd_var in all_usd_variations) else False)
 
-        # create new column for: transaction type(s);
-        cards = ['visa', 'mastercard', 'isracard', 'amex', 'diners', 'union pay']
+        # create new columns for: transaction type(s);
+        cards: list[str] = ['visa', 'mastercard', 'amex', 'diners', 'union pay']
+
         df['card'] = df['descr'].apply(lambda x: True if any(card in x for card in cards) else False)
         df['online'] = df['descr'].apply(lambda x: True if 'online' in x else False)
         df['pos'] = df['descr'].apply(lambda x: True if 'deposit' not in x and 'pos' in x else False)
         df['parking'] = df['descr'].apply(lambda x: True if 'parking' in x else False)
 
+        # create separate column for brands
+        trx_types: list[str] = ['visa', 'mastercard', 'amex', 'diners', 'union pay', 'cash', 'check']
+        for trx in trx_types:
+            df.loc[df['descr'].str.contains(trx), 'short_descr'] = trx
+
+        # because of the command above we can have NaN values. let us get rid of them
+        df['short_descr'].fillna('other', inplace=True)
+
         # other way of doing it but using numpy (import numpy as np) :
         # df['in_usd'] = np.where(df['descr'].str.contains(' usd '), True, False)
 
         # get rid of redundant words in description columns
-        df['descr'] = df['descr'].str.replace(r'/[ ]*online[ ]*/', ' ', regex=True)
-        df['descr'] = df['descr'].str.replace(r'[ ]*ils[ ]*|[ ]*usd[ ]*', ' ', regex=True)
-        df['descr'] = df['descr'].str.replace(r'[ ]*pos[ ]+', '', regex=True)
-        df['descr'] = df['descr'].str.replace(r'[ ]*offline[ ]*', '', regex=True)
+        # df['descr'] = df['descr'].str.replace(r'/[ ]*online[ ]*/', ' ', regex=True)
+        # df['descr'] = df['descr'].str.replace(r'[ ]*ils[ ]*|[ ]*usd[ ]*', ' ', regex=True)
+        # df['descr'] = df['descr'].str.replace(r'[ ]*pos[ ]+', '', regex=True)
+        # df['descr'] = df['descr'].str.replace(r'[ ]*offline[ ]*', '', regex=True)
 
         # trim whitespaces
         df['descr'] = df['descr'].apply(lambda x: x.strip() if isinstance(x, str) else x)
+        df['short_descr'] = df['short_descr'].apply(lambda x: x.strip() if isinstance(x, str) else x)
 
-        df_cards_columns = ['code', 'descr', 'usd', 'online', 'pos', 'parking']
+        df_cards_columns = ['code', 'short_descr', 'usd', 'online', 'pos', 'parking', 'descr']
         df_cards = df.loc[df['card']]
         df_cards = df_cards[df_cards_columns]
 
-        df_visa = df_cards.loc[df_cards['descr'].str.contains('visa')]
-
-        df_mastercard = df_cards.loc[
-            df_cards['descr'].str.contains('mastercard') |
-            df_cards['descr'].str.contains('isracard')
-            ]
-
-        df_amex = df_cards.loc[df['descr'].str.contains('amex')]
-
-        df_diners = df_cards.loc[df_cards['descr'].str.contains('diners')]
-
-        # df_union_pay = df_cards.loc[df_cards['descr'].str.contains('union')]
-
+        df_visa = df_cards.loc[df_cards['short_descr'] == 'visa']
+        df_mastercard = df_cards.loc[df_cards['short_descr'] == 'mastercard']
+        df_amex = df_cards.loc[df['short_descr'] == 'amex']
+        df_diners = df_cards.loc[df_cards['short_descr'] == 'diners']
+        # df_union_pay = df_cards.loc[df_cards['short_descr'] == 'union pay')]
         df_pos = df_cards.loc[df_cards['pos']]
-
         df_offline = df_cards.loc[df_cards['online'] == False]
-
         df_online = df_cards.loc[df_cards['online']]
 
         # check if anything left to sort out
-        # ~  means NOT IN
+        # ~  means NOT (IN)
         # df_other = df.loc[~df['descr'].isin(df_cards['descr'])]
 
         self.df_cards = df_cards
