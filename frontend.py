@@ -6,11 +6,9 @@ from backend import df_cards
 
 class Inputs:
     def __init__(self):
-        self.file_upload_status = False
-
-        self.jc_file = st.file_uploader
-        self.pc_file = st.file_uploader
-        self.rate = st.number_input
+        self.jc_file = None
+        self.pc_file = None
+        self.rate = None
 
     def jc_file_upload(self):
         st.subheader(jc_upload_subheader)
@@ -22,8 +20,12 @@ class Inputs:
         self.pc_file = st.file_uploader(label=pc_file_uploader_label,
                                         type=pc_file_formats)
 
-    def rate(self):
+    def rate_input(self):
         self.rate = st.number_input('Rate:', value=3.64, format='%.4f', step=0.01)
+
+    def check_status(self):
+        if self.pc_file and self.jc_file and self.rate:
+            return True
 
 
 class JCElements:

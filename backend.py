@@ -6,7 +6,7 @@ from opera_trx_codes.trx_codes_extractor import trx_codes
 
 # create dataframe with transaction code for bank cards
 # that we will use to operate with journal by credit card
-df_cards = trx_codes.cards
+df_cards = trx_codes.df_cards
 
 
 class DataframeOps(ABC):
